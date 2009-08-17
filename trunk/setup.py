@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name = "pysolr",
-    version = "2.0.6",
+    version = "2.0.9",
     description = "Lightweight python wrapper for Apache Solr.",
     author = 'Joseph Kocherhans',
     author_email = 'jkocherhans@gmail.com',

@@ -144,7 +144,7 @@ except NameError:
 
 __author__ = 'Joseph Kocherhans, Jacob Kaplan-Moss, Daniel Lindsley'
 __all__ = ['Solr']
-__version__ = (2, 0, 6)
+__version__ = (2, 0, 9)
 
 def get_version():
     return "%s.%s.%s" % __version__
@@ -201,7 +201,7 @@ class Solr(object):
             response = conn.getresponse()
             
             if response.status != 200:
-                raise SolrError(self._extract_error(response, response.read()))
+                raise SolrError(self._extract_error(dict(response.getheaders()), response.read()))
             
             return response.read()
 
@@ -242,8 +242,8 @@ class Solr(object):
         Extract the actual error message from a solr response. Unfortunately,
         this means scraping the html.
         """
-        et = ET.fromstring(response)
-        return "[%s] %s" % (headers.get('reason'), et.findtext('body/h1'))
+        jetty_br = '<br/>                                                \n'
+        return "[Reason: %s]\n%s" % (headers.get('reason'), response.replace(jetty_br, ''))
 
     # Conversion #############################################################
 
@@ -343,6 +343,13 @@ class Solr(object):
         response = self._mlt(params)
         
         result = self.decoder.decode(response)
+        
+        if result['response'] is None:
+            result['response'] = {
+                'docs': [],
+                'numFound': 0,
+            }
+        
         return Results(result['response']['docs'], result['response']['numFound'])
 
     def add(self, docs, commit=True):
